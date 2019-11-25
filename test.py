@@ -11,6 +11,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix
 import os
 # Input data files are available in the "../input/" directory.
 
@@ -18,97 +25,105 @@ import os
     
 
 def data_analysis(df):
+    
     """
     precentage of the heart disease
     x label is for the count of people 
     """
-    sns.countplot(x="target", data=df, palette="bwr")
-    plt.show()
-    countNoDisease = len(df[df.target == 0])
-    countHaveDisease = len(df[df.target == 1])
-    print("Percentage of Patients Haven't Heart Disease: {:.2f}%".format((countNoDisease / (len(df.target))*100)))
-    print("Percentage of Patients Have Heart Disease: {:.2f}%".format((countHaveDisease / (len(df.target))*100)))
+    if 'target' in df.columns:
+        sns.countplot(x="target", data=df, palette="bwr", color = ['lightsteelblue', 'cornflowerblue'])
+        plt.show()
+        count_No_Disease = len(df[df.target == 0])
+        count_Have_Disease = len(df[df.target == 1])
+        print("Percentage of Patients Haven't Heart Disease: {:.2f}%".format((count_No_Disease / (len(df.target))*100)))
+        print("Percentage of Patients Have Heart Disease: {:.2f}%".format((count_Have_Disease / (len(df.target))*100)))
 
     """
     precentage of female and male
     x label is for the count of people
     """
-    sns.countplot(x='sex', data=df, palette="mako_r")
-    plt.xlabel("Sex (0 = female, 1= male)")
-    plt.show()
-    
-    countFemale = len(df[df.sex == 0])
-    countMale = len(df[df.sex == 1])
-    print("Percentage of Female Patients: {:.2f}%".format((countFemale / (len(df.sex))*100)))
-    print("Percentage of Male Patients: {:.2f}%".format((countMale / (len(df.sex))*100)))
+    if 'sex' in df.columns:
+        sns.countplot(x='sex', data=df, palette="mako_r", color = ['blue','darkblue'])
+        plt.xlabel("Sex (0 = female, 1= male)")
+        plt.show()
+        
+        count_Female = len(df[df.sex == 0])
+        count_Male = len(df[df.sex == 1])
+        print("Percentage of Female Patients: {:.2f}%".format((count_Female / (len(df.sex))*100)))
+        print("Percentage of Male Patients: {:.2f}%".format((count_Male / (len(df.sex))*100)))
 
     """
     heart disease with the age
     """
-    pd.crosstab(df.age,df.target).plot(kind="bar",figsize=(20,6))
-    plt.title('Heart Disease Frequency for Ages')
-    plt.xlabel('Age')
-    plt.ylabel('Frequency')
-    plt.savefig('heartDiseaseAndAges.png')
-    plt.show()
+    if 'age' in df.columns and 'target' in df.columns:
+        pd.crosstab(df.age,df.target).plot(kind="bar",figsize=(20,6), color = ['mediumpurple','plum'])
+        plt.title('Heart Disease Frequency for Ages')
+        plt.xlabel('Age')
+        plt.ylabel('Frequency')
+        plt.savefig('heartDiseaseAndAges.png')
+        plt.show()
 
 
     """
     heart disease with the sex
     seprate the people and the disease 
     """
-    pd.crosstab(df.sex,df.target).plot(kind="bar",figsize=(15,6),color=['#1CA53B','#AA1111' ])
-    plt.title('Heart Disease Frequency for Sex')
-    plt.xlabel('Sex (0 = Female, 1 = Male)')
-    plt.xticks(rotation=0)
-    plt.legend(["Haven't Disease", "Have Disease"])
-    plt.ylabel('Frequency')
-    plt.show()
-    
+    if 'sex' in df.columns and 'target' in df.columns:
+        pd.crosstab(df.sex,df.target).plot(kind="bar",figsize=(15,6),color=['limegreen','green' ])
+        plt.title('Heart Disease Frequency for Sex')
+        plt.xlabel('Sex (0 = Female, 1 = Male)')
+        plt.xticks(rotation=0)
+        plt.legend(["Haven't Disease", "Have Disease"])
+        plt.ylabel('Frequency')
+        plt.show()
+        
     """ 
     relation with disease and age 
     scatter plot with age range and the different maximum heart rate
     red one is for disease and blue is for non disease
     see the correlation with heart rate and disease 
     """
-    plt.scatter(x=df.age[df.target==1], y=df.thalach[(df.target==1)], c="red")
-    plt.scatter(x=df.age[df.target==0], y=df.thalach[(df.target==0)])
-    plt.legend(["Disease", "Not Disease"])
-    plt.xlabel("Age")
-    plt.ylabel("Maximum Heart Rate")
-    plt.show()
+    if 'sex' in df.columns and 'target' in df.columns:
+        plt.scatter(x=df.age[df.target==1], y=df.thalach[(df.target==1)], c="red")
+        plt.scatter(x=df.age[df.target==0], y=df.thalach[(df.target==0)])
+        plt.legend(["Disease", "Not Disease"])
+        plt.xlabel("Age")
+        plt.ylabel("Maximum Heart Rate")
+        plt.show()
 
-
-    pd.crosstab(df.slope,df.target).plot(kind="bar",figsize=(15,6),color=['#DAF7A6','#FF5733' ])
-    plt.title('Heart Disease Frequency for Slope')
-    plt.xlabel('The Slope of The Peak Exercise ST Segment ')
-    plt.xticks(rotation = 0)
-    plt.ylabel('Frequency')
-    plt.show()
+    if 'slope' in df.columns and 'target' in df.columns:
+        pd.crosstab(df.slope,df.target).plot(kind="bar",figsize=(15,6),color=['orange','moccasin' ])
+        plt.title('Heart Disease Frequency for Slope')
+        plt.xlabel('The Slope of The Peak Exercise ST Segment ')
+        plt.xticks(rotation = 0)
+        plt.ylabel('Frequency')
+        plt.show()
     
     
     """
     Fasting Blood Sugar with disease
     to see whether fasting blood suger will influence the people have disease
     """    
-    pd.crosstab(df.fbs,df.target).plot(kind="bar",figsize=(15,6),color=['#FFC300','#581845' ])
-    plt.title('Heart Disease Frequency According To FBS')
-    plt.xlabel('FBS - (Fasting Blood Sugar > 120 mg/dl) (1 = true; 0 = false)')
-    plt.xticks(rotation = 0)
-    plt.legend(["Haven't Disease", "Have Disease"])
-    plt.ylabel('Frequency of Disease or Not')
-    plt.show()
-    
+    if 'fbs' in df.columns and 'target' in df.columns:
+        pd.crosstab(df.fbs,df.target).plot(kind="bar",figsize=(15,6),color=['goldenrod','gold' ])
+        plt.title('Heart Disease Frequency According To FBS')
+        plt.xlabel('FBS - (Fasting Blood Sugar > 120 mg/dl) (1 = true; 0 = false)')
+        plt.xticks(rotation = 0)
+        plt.legend(["Haven't Disease", "Have Disease"])
+        plt.ylabel('Frequency of Disease or Not')
+        plt.show()
+        
     """
     Chest Pain Type with disease
     to see whether different chest type will influence the people have disease
     """
-    pd.crosstab(df.cp,df.target).plot(kind="bar",figsize=(15,6),color=['#11A5AA','#AA1190' ])
-    plt.title('Heart Disease Frequency According To Chest Pain Type')
-    plt.xlabel('Chest Pain Type')
-    plt.xticks(rotation = 0)
-    plt.ylabel('Frequency of Disease or Not')
-    plt.show()
+    if 'cp' in df.columns and 'target' in df.columns:
+        pd.crosstab(df.cp,df.target).plot(kind="bar",figsize=(15,6),color=['tomato','orangered' ])
+        plt.title('Heart Disease Frequency According To Chest Pain Type')
+        plt.xlabel('Chest Pain Type')
+        plt.xticks(rotation = 0)
+        plt.ylabel('Frequency of Disease or Not')
+        plt.show()
     
     
     
@@ -218,19 +233,24 @@ def logistic_regression(x_train,y_train,x_test,y_test,learningRate,iteration):
     
     print("Manuel Test Accuracy: {:.2f}%".format((100 - np.mean(np.abs(y_prediction - y_test))*100)))
     
-def machine_learning_model():
+def machine_learning_model(x_train,y_train,x_test,y_test):
           
-    #logistic regression   
+    # All model list here 
+    # store the acc into accuracies dictionary
+    
+    """logistic regression """
     logistic_regression(x_train,y_train,x_test,y_test,1,100)
-    #KNN
-    from sklearn.neighbors import KNeighborsClassifier
+    
+    
+    
+    """KNN"""
     knn = KNeighborsClassifier(n_neighbors = 2)  # n_neighbors means k
     knn.fit(x_train.T, y_train.T)
     prediction = knn.predict(x_test.T)
     
     print("{} NN Score: {:.2f}%".format(2, knn.score(x_test.T, y_test.T)*100))
     
-    # try ro find best k value
+    #try ro find best k value
     scoreList = []
     for i in range(1,20):
         knn2 = KNeighborsClassifier(n_neighbors = i)  # n_neighbors means k
@@ -248,8 +268,7 @@ def machine_learning_model():
     print("Maximum KNN Score is {:.2f}%".format(acc))
     
     
-    #SVM
-    from sklearn.svm import SVC
+    """SVM """
     svm = SVC(random_state = 1)
     svm.fit(x_train.T, y_train.T)
     
@@ -257,8 +276,8 @@ def machine_learning_model():
     accuracies['SVM'] = acc
     print("Test Accuracy of SVM Algorithm: {:.2f}%".format(acc))
     
-    #Naive Bayes
-    from sklearn.naive_bayes import GaussianNB
+    
+    """Naive Bayes"""
     nb = GaussianNB()
     nb.fit(x_train.T, y_train.T)
     
@@ -266,8 +285,8 @@ def machine_learning_model():
     accuracies['Naive Bayes'] = acc
     print("Accuracy of Naive Bayes: {:.2f}%".format(acc))
     
-    #Decision tree
-    from sklearn.tree import DecisionTreeClassifier
+    
+    """Decision tree"""
     dtc = DecisionTreeClassifier()
     dtc.fit(x_train.T, y_train.T)
     
@@ -275,8 +294,8 @@ def machine_learning_model():
     accuracies['Decision Tree'] = acc
     print("Decision Tree Test Accuracy {:.2f}%".format(acc))
     
-    #Random forest
-    from sklearn.ensemble import RandomForestClassifier
+    
+    """Random forest"""
     rf = RandomForestClassifier(n_estimators = 1000, random_state = 1)
     rf.fit(x_train.T, y_train.T)
     
@@ -286,8 +305,8 @@ def machine_learning_model():
     
     
     
-    #compare
-    colors = ["purple", "green", "orange", "magenta","#CFC60E","#0FBBAE"]
+    #compare and plot the acc
+    colors = ["#DDA0DD", "#FFD700", "#FF6347", "#6495ED","#9ACD32","#FA8072"]
     
     sns.set_style("whitegrid")
     plt.figure(figsize=(16,5))
@@ -301,7 +320,11 @@ def machine_learning_model():
     
     
     
-    # Predicted values
+    """ 
+    All Predicted values 
+    and get the confuse matrix
+    """
+    
     lr = LogisticRegression()
     lr.fit(x_train.T,y_train.T)
     y_head_lr = lr.predict(x_test.T)
@@ -312,7 +335,7 @@ def machine_learning_model():
     y_head_nb = nb.predict(x_test.T)
     y_head_dtc = dtc.predict(x_test.T)
     y_head_rf = rf.predict(x_test.T)
-    from sklearn.metrics import confusion_matrix
+    
     
     cm_lr = confusion_matrix(y_test,y_head_lr)
     cm_knn = confusion_matrix(y_test,y_head_knn)
@@ -352,7 +375,7 @@ def machine_learning_model():
     plt.show()
         
 def main():
-    
+    # the dataset only from cleverland
     df = pd.read_csv("data/heart.csv")
     df.head(20)
     print(df.target.value_counts())
@@ -363,7 +386,20 @@ def main():
     #get the mean of total dataset
     df.groupby('target').mean()
     print(df.groupby('target').mean())
+    machine_learning_model(x_train,y_train, x_test, y_test)
+    
+    # the dataset from all three places
+    df = pd.read_csv("data/All_data_total.csv")
+    df.head(20)
+    print(df.target.value_counts())
+    data_analysis(df)
 
+    x_train,y_train, x_test, y_test = data_for_model(df)
+
+    #get the mean of total dataset
+    df.groupby('target').mean()
+    print(df.groupby('target').mean())
+    machine_learning_model(x_train,y_train, x_test, y_test)
 
 
 
